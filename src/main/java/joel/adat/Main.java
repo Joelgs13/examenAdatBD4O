@@ -140,16 +140,16 @@ public class Main {
                             if (Integer.parseInt(lineatrib[0])==h.getIdHabitante()){
                                 //añadir tributo a la lista
                                 Habitante habit = new Habitante(Integer.parseInt(lineatrib[0]),Integer.parseInt(lineatrib[2]),lineatrib[1],Boolean.parseBoolean(lineatrib[3]));
-                                listaDetributos.add(new Tributo(habit,lineatrib[6],lineatrib[5]);
+                                listaDetributos.add(new Tributo(habit,Integer.parseInt(lineatrib[6]),lineatrib[5]);
                             }
                         }
 
-                        dis.setHabitantes(listaDehabitantes);
+                        jue.setTributos(listaDetributos);
                     } catch (CsvException | IOException | URISyntaxException e) {
                         throw new RuntimeException(e);
                     }
                 }
-                DaoDistrito.insert(dis, db);
+                DaoJuego.insert(jue, db);
             }
         } catch (FileNotFoundException | CsvException e) {
             throw new RuntimeException(e);
