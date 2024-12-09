@@ -63,25 +63,27 @@ public class Main {
     public static void cargarDatosDistrito(File ruta, ObjectContainer db) {
         try (CSVReader reader = new CSVReader(new FileReader(ruta))) {
             List<String[]> lineas = reader.readAll();
-            lineas.removeFirst();
+            List<String[]> lineasSinEncabezado = new ArrayList<>(lineas.subList(1, lineas.size()));
 
-            //x cada linea evaluamos el objeto que se va a crear
-            for (String[] linea : lineas) {
-                Distrito dis = DaoDistrito.getByName(linea[1],db);
-                if (dis==null){
-                    //crea distrito
+            for (String[] linea : lineasSinEncabezado) {
+                Distrito dis = DaoDistrito.getByName(linea[1], db);
+                if (dis == null) {
                     Habitante h = new Habitante();
                     dis = new Distrito(Integer.parseInt(linea[0]), linea[1], null);
-                    //cargar la lista de habitantes de ese distrito
+
                     List<Habitante> listaDehabitantes = new ArrayList<>();
                     try (CSVReader leerhabitantes = new CSVReader(new FileReader(new File(h.getClass().getResource("/csv/habitantes.csv").toURI())))) {
-                        List<String[]> lhab = reader.readAll();
-                        lineas.removeFirst();
+                        List<String[]> lhab = leerhabitantes.readAll();
+                        List<String[]> lhabSinEncabezado = new ArrayList<>(lhab.subList(1, lhab.size()));
 
-                        for (String[] lineaHab : lhab){
-                            if (Integer.parseInt(lineaHab[4])==dis.getIdDistrito()){
-                                //añadir habitante a la lista
-                                listaDehabitantes.add(new Habitante(Integer.parseInt(lineaHab[0]),Integer.parseInt(lineaHab[2]),lineaHab[1],Boolean.parseBoolean(lineaHab[3])));
+                        for (String[] lineaHab : lhabSinEncabezado) {
+                            if (Integer.parseInt(lineaHab[4]) == dis.getIdDistrito()) {
+                                listaDehabitantes.add(new Habitante(
+                                        Integer.parseInt(lineaHab[0]),
+                                        Integer.parseInt(lineaHab[2]),
+                                        lineaHab[1],
+                                        Boolean.parseBoolean(lineaHab[3])
+                                ));
                             }
                         }
 
@@ -98,6 +100,7 @@ public class Main {
             throw new RuntimeException(e);
         }
     }
+
 
     public static void cargarDatosHabitantes(File ruta, ObjectContainer db) {
         try (CSVReader reader = new CSVReader(new FileReader(ruta))) {
@@ -121,32 +124,46 @@ public class Main {
     public static void cargarDatosJuegos(File ruta, ObjectContainer db) {
         try (CSVReader reader = new CSVReader(new FileReader(ruta))) {
             List<String[]> lineas = reader.readAll();
-            lineas.removeFirst();
+            List<String[]> lineasSinEncabezado = new ArrayList<>(lineas.subList(1, lineas.size()));
 
-            //x cada linea evaluamos el objeto que se va a crear
-            for (String[] linea : lineas) {
-                Juego jue = DaoJuego.getByYear(Integer.parseInt(linea[1]),db);
-                if (jue==null){
-                    //crea juego
+            for (String[] linea : lineasSinEncabezado) {
+                Juego jue = DaoJuego.getByYear(Integer.parseInt(linea[1]), db);
+                if (jue == null) {
                     Habitante h = new Habitante();
                     jue = new Juego(Integer.parseInt(linea[0]), null, null);
-                    //cargar la lista de tributos de ese juego
+
                     List<Tributo> listaDetributos = new ArrayList<>();
                     try (CSVReader leertributo = new CSVReader(new FileReader(new File(h.getClass().getResource("/csv/habitantes.csv").toURI())))) {
-                        List<String[]> ltrib = reader.readAll();
-                        lineas.removeFirst();
+                        List<String[]> ltrib = leertributo.readAll();
+                        List<String[]> ltribSinEncabezado = new ArrayList<>(ltrib.subList(1, ltrib.size()));
 
-                        for (String[] lineatrib : ltrib){
-                            if (Integer.parseInt(lineatrib[0])==h.getIdHabitante()){
-                                //añadir tributo a la lista
-                                Habitante habit = new Habitante(Integer.parseInt(lineatrib[0]),Integer.parseInt(lineatrib[2]),lineatrib[1],Boolean.parseBoolean(lineatrib[3]));
-                                listaDetributos.add(new Tributo(habit,Integer.parseInt(lineatrib[6]),lineatrib[5]);
+                        for (String[] lineatrib : ltribSinEncabezado) {
+                            if (Integer.parseInt(lineatrib[0]) == h.getIdHabitante()) {
+                                Habitante habit = new Habitante(
+                                        Integer.parseInt(lineatrib[0]),
+                                        Integer.parseInt(lineatrib[2]),
+                                        lineatrib[1],
+                                        Boolean.parseBoolean(lineatrib[3])
+                                );
+                                listaDetributos.add(new Tributo(habit, Integer.parseInt(lineatrib[6]), lineatrib[5]));
                             }
                         }
 
                         jue.setTributos(listaDetributos);
                     } catch (CsvException | IOException | URISyntaxException e) {
                         throw new RuntimeException(e);
+                    }
+
+                    try {
+                        int idGanador = Integer.parseInt(linea[3]);
+                        Tributo ganador = DaoTributo.getById(idGanador, db);
+                        if (ganador != null) {
+                            jue.setGanador(ganador);
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println(e.getMessage());
+                    } catch (Exception e) {
+                        System.out.println("Error al cargar el ganador: " + e.getMessage());
                     }
                 }
                 DaoJuego.insert(jue, db);
@@ -157,4 +174,5 @@ public class Main {
             throw new RuntimeException(e);
         }
     }
+
 }
