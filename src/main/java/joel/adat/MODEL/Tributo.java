@@ -3,12 +3,13 @@ package joel.adat.MODEL;
 public class Tributo extends Habitante{
     int puntaje;
     String habilidad;
+    Habitante habitante;
 
     public Tributo() {
     }
 
-    public Tributo(int puntaje, String habilidad) {
-        super();
+    public Tributo(Habitante habitante,int puntaje, String habilidad) {
+        this.habitante=habitante;
         this.puntaje = puntaje;
         this.habilidad = habilidad;
     }
